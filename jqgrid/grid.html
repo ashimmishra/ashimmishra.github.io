@@ -60,7 +60,7 @@ $.jgrid.useJSON = true;
 $(document).ready(function () {
 	var filter;
 	$("#" + gridId).jqGrid({
-		url: 'data.json',
+		url: '/jqGrid/data.json',
 		mtype: "GET",
 		datatype: "json",
 		colNames:['Region','Country', 'Sector', 'Industry','Company','Ticker','Model','Views','Analyst'],

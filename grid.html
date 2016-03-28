@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <script type="text/ecmascript" src="jqgrid/js/jquery.min.js"></script> 
+	<script type="text/ecmascript" src="jqgrid/js/jquery-ui.min.js"></script> 
+    <script type="text/ecmascript" src="jqgrid/js/trirand/jquery.jqGrid.min.js"></script>
+    <script type="text/ecmascript" src="jqgrid/js/trirand/i18n/grid.locale-en.js"></script>
+
+    <link rel="stylesheet" type="text/css" media="screen" href="jqgrid/css/jquery-ui.css" />
+    <link rel="stylesheet" type="text/css" media="screen" href="jqgrid/css/trirand/ui.jqgrid.css" />
+
+    <meta charset="utf-8" />
+    <title>jqGrid Loading Data - Grouping By Multiple Columns With Header Summaries</title>
+	
+	<style>
+		#groups li { 
+			margin: 0 3px 3px 3px; 
+			padding: 0.4em; 
+			padding-left: 1.5em; 
+			height: 18px
+		}
+		#groups li span { 
+			position: absolute; 
+			margin-left: -1.3em; 
+		}
+		
+		/* set the size of the autocomplete search control*/
+        .ui-menu-item {
+            font-size: 11px;
+        }
+
+         .ui-autocomplete {
+            font-size: 11px;
+        }       
+		.ui-jqgrid tr.ui-row-ltr td {
+			text-overflow: ellipsis;
+		}
+
+	</style>
+</head>
+<body>
+
+	<div id="groups">
+		<h1 class="ui-widget-header">Analyst Coverage</h1>
+		<div class="ui-widget-content">
+			<ul style="list-style-type:none">
+				<li class="placeholder">Drag a column header and drop here to group the table by that column</li>
+			</ul>
+		</div>
+	</div>
+    <table id="jqGrid"></table>
+    <div id="jqGridPager"></div>
+
+<script type="text/javascript"> 
+var gridId = 'jqGrid';
+$.jgrid.no_legacy_api = true;
+$.jgrid.useJSON = true;
+
+$(document).ready(function () {
+	var filter;
+	$("#" + gridId).jqGrid({
+		url: 'data.json',
+		mtype: "GET",
+		datatype: "json",
+		colNames:['Region','Country', 'Sector', 'Industry','Company','Ticker','Model','Views','Analyst'],
+		colModel: [
+			{ label: 'Region', 
+				name: 'region', 
+				key: true, 
+				width: 60,
+				coloptions : {sorting:true, columns: true, filtering: true, seraching:false, grouping:false, freeze : false},
+				searchoptions : {
+							searchOperMenu : false,
+							sopt : ['cn','nc', 'bw','ew','eq', 'ne']
+				}
+			},
+			{ label: 'Country', 
+				name: 'country', 
+				stype: "select", 
+				width: 60 ,
+				coloptions : {sorting:true, columns: true, filtering: true, seraching:false, grouping:false, freeze : false},
+				searchoptions : {
+							value: ":[All];USA:USA" ,
+							searchOperMenu : false,
+							sopt : ['eq', 'ne']
+				}
+			},
+			{ label: 'Sector',
+				name: 'sector', 
+				width: 100,
+				coloptions : {sorting:true, columns: true, filtering: true, seraching:false, grouping:false, freeze : false},
+				searchoptions : {
+							searchOperMenu : false,
+							sopt : ['cn','nc', 'bw','ew','eq', 'ne']
+				}
+			},
+			{ 
+				label: 'Industry', 
+				name: 'industry', 
+				width: 120,
+				coloptions : {sorting:true, columns: true, filtering: true, seraching:false, grouping:false, freeze : false},
+				searchoptions : {
+							searchOperMenu : false,
+							sopt : ['cn','nc', 'bw','ew','eq', 'ne']
+				}
+			},
+			{ label: 'Company', 
+				name: 'company', 
+				width: 150,
+				coloptions : {sorting:true, columns: true, filtering: true, seraching:false, grouping:false, freeze : false},
+				searchoptions : {
+							searchOperMenu : false,
+							sopt : ['cn','nc', 'bw','ew','eq', 'ne']
+				} 				
+			},
+			{ 
+				label: 'Ticker', 
+				name: 'ticker', 
+				width: 60,
+				coloptions : {sorting:true, columns: true, filtering: true, seraching:false, grouping:false, freeze : false},
+				searchoptions : {
+							searchOperMenu : false,
+							sopt : ['cn','nc', 'bw','ew','eq', 'ne']
+				}
+			},
+			{ 
+				label: 'Model', 
+				name: 'model', 
+				width: 60,
+				coloptions : {sorting:true, columns: true, filtering: false, seraching:false, grouping:false, freeze : false},
+				align: 'left',
+				formatter: formatImage
+			},
+			{ 
+				label: 'Views', 
+				name: 'views', 
+				width: 100,
+				coloptions : {sorting:true, columns: true, filtering: true, seraching:false, grouping:false, freeze : false},
+				searchoptions : {
+							searchOperMenu : false,
+							sopt : ['cn','nc', 'bw','ew', 'eq', 'ne']
+				},
+				formatter: formatViews
+			},
+			{ 
+				label: 'Analyst', 
+				name: 'analyst', 
+				width: 120,
+				coloptions : {sorting:true, columns: true, filtering: true, seraching:false, grouping:false, freeze : false},
+				searchoptions : {
+							searchOperMenu : false,
+							sopt : ['cn','nc', 'bw','ew','eq', 'ne']
+				}
+			}
+		],
+		loadonce:true,
+		viewrecords: true,
+		rowList: [12,24,48,96],
+		width: 1280,
+		height: 325,
+		rowNum: 12,
+		sortname: 'company',
+		pager: "#jqGridPager",
+		grouping: true,
+		colMenu : true
+	});
+	
+	$('#jqGrid').jqGrid('filterToolbar',{
+				stringResult: true,
+				searchOnEnter: false,
+				defaultSearch: "cn"
+	});
+			
+	$('#jqGrid').jqGrid('navGrid',"#jqGridPager", {                
+		search: true, // show search button on the toolbar
+		add: false,
+		edit: false,
+		del: false,
+		refresh: false
+	});
+	
+	$('tr.ui-jqgrid-labels th div') .draggable({
+		appendTo: 'body',
+		helper: 'clone'
+	});
+});
+
+ function formatImage(cellValue, options, rowObject) {
+	var imageHtml = "<img src='jqgrid/css/images/excel.png' />" + cellValue;
+	return imageHtml;
+}
+
+
+ function formatViews(cellValue, options, rowObject) {
+	if(!cellValue) {
+		return;
+	}	
+	
+	var cellValArr = cellValue.split(" ");
+	var cellHtml = "";
+	$.each(cellValArr, function (indexdata, valuedata) {
+		if(valuedata == 'COMPANY') {
+			cellHtml += " <span onclick='alert(\"company clicked\")' style='background:purple;color:white'>COMPANY</span> ";
+		}
+		else if(valuedata == 'ANALYST') {
+			cellHtml += " <span  onclick='alert(\"Analyst clicked\")' style='background:blue;color:white'>ANALYST</span> ";
+		}
+		else if(valuedata == 'PRIORITIZE') {
+			cellHtml += " <span onclick='alert(\"Prioritize clicked\")' style='background:green;color:white'>PRIORITIZE</span> ";
+		}
+		else {
+			cellHtml += valuedata + " ";
+		}
+	});
+	return cellHtml;
+}
+
+$('#groups ul').droppable({
+	activeClass: 'ui-state-default',
+	hoverClass: 'ui-state-hover',
+	accept: ':not(.ui-sortable-helper)',
+	drop: function(event, ui) {
+		var $this = $(this);
+		$this.find('.placeholder').remove();
+		var groupingColumn = $('<li></li>').attr('data-column', ui.draggable.attr('id').replace('jqgh_' + gridId + '_', ''));
+		$('<span class="ui-icon ui-icon-close"></span>').click(function() {
+			$(this).parent().remove();
+			$('#' + gridId).jqGrid('groupingRemove');
+			$('#' + gridId).jqGrid('groupingGroupBy', $('#groups ul li:not(.placeholder)').map(function(){ return $(this).attr('data-column'); }).get());
+			if ($('#groups ul li:not(.placeholder)').length === 0) {
+				$('<li class="placeholder">Drop headers here</li>').appendTo($this);
+			}
+		}).appendTo(groupingColumn);
+		groupingColumn.append(ui.draggable.text());
+		groupingColumn.appendTo($this);
+		$('#' + gridId).jqGrid('groupingRemove');
+		$('#' + gridId).jqGrid('groupingGroupBy', $('#groups ul li:not(.placeholder)').map(function(){ return $(this).attr('data-column'); }).get());
+	}
+}).sortable({
+		items: 'li:not(.placeholder)',
+		sort: function() {
+			$( this ).removeClass('ui-state-default');
+		},
+		stop: function() {
+			$('#' + gridId).jqGrid('groupingRemove');
+			$('#' + gridId).jqGrid('groupingGroupBy', $('#groups ul li:not(.placeholder)').map(function(){ return $(this).attr('data-column'); }).get());
+		}
+});
+
+</script>
+
+    
+</body>
+</html>
